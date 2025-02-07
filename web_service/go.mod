@@ -1,4 +1,4 @@
-module github.com/mcpalek/golang-microservices/db_service
+module web_service
 
 go 1.23.5
 
