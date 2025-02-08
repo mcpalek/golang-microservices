@@ -17,7 +17,8 @@ func main() {
 	}
 
 	connString := fmt.Sprintf("server=%s;port=%s;user id=%s;password=%s;encrypt=disable",
-		config.Server, config.Port, config.User, config.Password)
+		config.SQLServer.Host, config.SQLServer.Port, config.SQLServer.User, config.SQLServer.Password)
+	fmt.Println("Loaded config:", config)
 
 	db, err := sql.Open("sqlserver", connString)
 	if err != nil {
@@ -35,7 +36,7 @@ func main() {
 		log.Println("Table might already exist:", err)
 	}
 
-	_, err = db.Exec("INSERT INTO Users (FirstName, LastName) VALUES ('John', 'Doe'), ('Alice', 'Smith')")
+	_, err = db.Exec("USE userDB; INSERT INTO Users (FirstName, LastName) VALUES ('John', 'Doe'), ('Alice', 'Smith')")
 	if err != nil {
 		log.Println("Error inserting sample data:", err)
 	}

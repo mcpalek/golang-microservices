@@ -24,7 +24,7 @@ func getUsers(w http.ResponseWriter, r *http.Request) {
 	}
 
 	connString := fmt.Sprintf("server=%s;port=%s;database=userDB;user id=%s;password=%s;encrypt=disable",
-		config.Server, config.Port, config.User, config.Password)
+		config.SQLServer.Host, config.SQLServer.Port, config.SQLServer.User, config.SQLServer.Password)
 
 	db, err := sql.Open("sqlserver", connString)
 	if err != nil {
@@ -43,11 +43,15 @@ func getUsers(w http.ResponseWriter, r *http.Request) {
 	var users []User
 	for rows.Next() {
 		var u User
-		rows.Scan(&u.ID, &u.FirstName, &u.LastName)
+		if err := rows.Scan(&u.ID, &u.FirstName, &u.LastName); err != nil {
+			http.Error(w, "Error scanning users", http.StatusInternalServerError)
+			return
+		}
 		users = append(users, u)
 	}
-
+	//fmt.Println(rows)
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	json.NewEncoder(w).Encode(users)
 }
 

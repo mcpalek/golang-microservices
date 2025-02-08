@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend-service
+  template:
+    metadata:
+      labels:
+        app: frontend-service
+    spec:
+      containers:
+        - name: frontend-service
+          image: <your-docker-image-repository>/frontend-service:latest
+          ports:
+            - containerPort: 8082
+          env:
+            - name: BACKEND_URL
+              value: "http://web-service:8081/users"  # Change to the web service URL
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-service
+spec:
+  selector:
+    app: frontend-service
+  ports:
+    - protocol: TCP
+      port: 8082
+      targetPort: 8082
+      nodePort: 30002
+  type: NodePort #ClusterIP  # Exposes the service inside the cluster

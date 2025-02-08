@@ -1,0 +1,30 @@
+trigger:
+  branches:
+    include:
+      - main
+
+stages:
+- stage: Build
+  jobs:
+  - job: Build
+    steps:
+    - task: Docker@2
+      inputs:
+        command: buildAndPush
+        containerRegistry: 'your-acr-connection'
+        repository: 'db_service'
+        dockerfile: 'db_service/Dockerfile'
+        tags: latest
+
+    - task: Docker@2
+      inputs:
+        command: buildAndPush
+        containerRegistry: 'your-acr-connection'
+        repository: 'web_service'
+        dockerfile: 'web_service/Dockerfile'
+        tags: latest
+
+    - task: Kubernetes@1
+      inputs:
+        command: apply
+        arguments: '-f k8s/'

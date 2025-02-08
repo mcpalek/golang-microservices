@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web-service
+  template:
+    metadata:
+      labels:
+        app: web-service
+    spec:
+      containers:
+        - name: web-service
+          image: youracr.azurecr.io/web_service:latest
+          ports:
+            - containerPort: 8081  # Exposes port 8081 for the web-service container
+          volumeMounts:
+            - name: config-volume
+              mountPath: /app/config.json
+              subPath: config.json
+      volumes:
+        - name: config-volume
+          configMap:
+            name: sqlserver-config
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-service
+spec:
+  selector:
+    app: web-service
+  ports:
+    - protocol: TCP
+      port: 8081  # This is the port the web-service will be exposed on
+      targetPort: 8081  # The port the container listens on
+      nodePort: 30002
+  type: NodePort #ClusterIP  # Expose the service inside the cluster (default)

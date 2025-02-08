@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: db-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: db-service
+  template:
+    metadata:
+      labels:
+        app: db-service
+    spec:
+      containers:
+        - name: db-service
+          image: youracr.azurecr.io/db_service:latest
+          ports:
+            - containerPort: 1433  # Exposes the SQL Server port inside the container
+          volumeMounts:
+            - name: config-volume
+              mountPath: /app/config.json
+              subPath: config.json
+      volumes:
+        - name: config-volume
+          configMap:
+            name: sqlserver-config
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: db-service
+spec:
+  selector:
+    app: db-service
+  ports:
+    - protocol: TCP
+      port: 1433  # Exposes the SQL Server port
+      targetPort: 1433  # Container port where SQL Server is listening
+  type: ClusterIP  # Ostavio sam ga da bude ClusterIP na taj nachin pristup bazi je moguch samo iz clustera a ne i spolja Exposes the service within the cluster
