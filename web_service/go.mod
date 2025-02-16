@@ -1,8 +1,9 @@
 module web_service
 
-go 1.23.5
+go 1.23
 
-replace github.com/mcpalek/golang-microservices/configloader => ../configloader
+// replace github.com/mcpalek/golang-microservices/configloader => ../configloader
+replace github.com/mcpalek/golang-microservices/configloader => /app/configloader
 
 require (
 	github.com/denisenkom/go-mssqldb v0.12.3

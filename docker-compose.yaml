@@ -1,0 +1,55 @@
+version: "3.8"
+services:
+  db_service:
+    build:
+      context: .  # Use the root of the project as the build context
+      dockerfile: ./db_service/Dockerfile  # Path to the Dockerfile
+    environment:
+      SQLSERVER_HOST: db
+      SQLSERVER_PORT: 1433
+      SQLSERVER_USER: sa
+      SQLSERVER_PASSWORD: "Giga2000"
+      SQLSERVER_DATABASE: userDB
+    volumes:
+      - configloader:/app/configloader  # Mount the configloader volume at runtime
+    networks:
+      - golang_network
+
+  web_service:
+    build: 
+      context: . 
+      dockerfile: ./web_service/Dockerfile
+    ports:
+      - "8081:8081"
+    environment:
+      SQLSERVER_HOST: "192.168.100.201"
+      SQLSERVER_PORT: 1433
+      SQLSERVER_USER: sa
+      SQLSERVER_PASSWORD: "Giga2000"
+      SQLSERVER_DATABASE: userDB
+    depends_on:
+      - db_service
+    volumes:
+      - configloader:/app/configloader 
+    networks:
+      - golang_network
+
+  frontend_service:
+    build: 
+      context: . 
+      dockerfile: ./frontend_service/Dockerfile
+    ports:
+      - "8082:8082"
+    depends_on:
+      - web_service
+    environment:
+      - API_URL=http://web_service:8081/users
+    networks:
+      - golang_network
+
+volumes:
+  configloader:
+    external: true  # Ensure the volume exists externally and contains the correct `configloader` module
+networks:
+  golang_network:
+    driver: bridge
