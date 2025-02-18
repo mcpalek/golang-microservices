@@ -12,7 +12,7 @@ stages:
     - task: Docker@2
       inputs:
         command: buildAndPush
-        containerRegistry: 'golang.azurecr.io'
+        containerRegistry: 'MyAzureContainerRegistry'
         repository: 'db_service'
         dockerfile: 'db_service/Dockerfile'
         tags: latest
@@ -21,7 +21,7 @@ stages:
     - task: Docker@2
       inputs:
         command: buildAndPush
-        containerRegistry: 'golang.azurecr.io'
+        containerRegistry: 'MyAzureContainerRegistry'
         repository: 'web_service'
         dockerfile: 'web_service/Dockerfile'
         tags: latest
@@ -30,7 +30,7 @@ stages:
     - task: Docker@2
       inputs:
         command: buildAndPush
-        containerRegistry: 'golang.azurecr.io'
+        containerRegistry: 'MyAzureContainerRegistry'
         repository: 'frontend_service'
         dockerfile: 'frontend_service/Dockerfile'
         tags: latest
