@@ -37,26 +37,45 @@ stages:
         dockerfile: 'frontend_service/Dockerfile'
         buildContext: $(Build.SourcesDirectory)
         tags: latest
-
 - stage: Deploy
   jobs:
   - job: Deploy
     steps:
-    # Download the kubeconfig.yaml from secure files
     - task: DownloadSecureFile@1
       inputs:
         secureFile: 'kubeconfig.yaml'
 
-    # Set KUBECONFIG environment variable to point to the downloaded kubeconfig
     - script: |
-        export KUBECONFIG=$(System.DefaultWorkingDirectory)/_temp/kubeconfig.yaml
-        sudo kubectl get nodes
+        chmod 600 $(Agent.TempDirectory)/kubeconfig.yaml
+        export KUBECONFIG=$(Agent.TempDirectory)/kubeconfig.yaml
+        kubectl config view
+        kubectl get nodes
       displayName: 'Set Kubeconfig and Verify Cluster Access'
 
-    # Deploy the Kubernetes resources
-    - task: Kubernetes@1
-      inputs:
-        connectionType: 'KubeConfig'
-        kubeconfig: '$(System.DefaultWorkingDirectory)/_temp/kubeconfig.yaml'
-        command: 'apply'
-        arguments: '-f k8s/'
+    - script: |
+        export KUBECONFIG=$(Agent.TempDirectory)/kubeconfig.yaml
+        kubectl apply -f k8s/
+      displayName: 'Apply Kubernetes Manifests'
+# - stage: Deploy
+#   jobs:
+#   - job: Deploy
+#     steps:
+#     # Download the kubeconfig.yaml from secure files
+#     - task: DownloadSecureFile@1
+#       inputs:
+#         secureFile: 'kubeconfig.yaml'
+
+#     # Set KUBECONFIG environment variable to point to the downloaded kubeconfig
+#     - script: |
+#         #export KUBECONFIG=$(System.DefaultWorkingDirectory)/_temp/kubeconfig.yaml
+#         export KUBECONFIG=$(Agent.TempDirectory)/kubeconfig.yaml
+#         sudo kubectl get nodes
+#       displayName: 'Set Kubeconfig and Verify Cluster Access'
+
+#     # Deploy the Kubernetes resources
+#     - task: Kubernetes@1
+#       inputs:
+#         connectionType: 'KubeConfig'
+#         kubeconfig: '$(System.DefaultWorkingDirectory)/_temp/kubeconfig.yaml'
+#         command: 'apply'
+#         arguments: '-f k8s/'
