@@ -8,23 +8,52 @@ stages:
   jobs:
   - job: Build
     steps:
+    # Build and push db_service
     - task: Docker@2
       inputs:
         command: buildAndPush
-        containerRegistry: 'your-acr-connection'
+        containerRegistry: 'golang.azurecr.io'
         repository: 'db_service'
         dockerfile: 'db_service/Dockerfile'
         tags: latest
 
+    # Build and push web_service
     - task: Docker@2
       inputs:
         command: buildAndPush
-        containerRegistry: 'your-acr-connection'
+        containerRegistry: 'golang.azurecr.io'
         repository: 'web_service'
         dockerfile: 'web_service/Dockerfile'
         tags: latest
 
+    # Build and push frontend_service
+    - task: Docker@2
+      inputs:
+        command: buildAndPush
+        containerRegistry: 'golang.azurecr.io'
+        repository: 'frontend_service'
+        dockerfile: 'frontend_service/Dockerfile'
+        tags: latest
+
+- stage: Deploy
+  jobs:
+  - job: Deploy
+    steps:
+    # Download the kubeconfig.yaml from secure files
+    - task: DownloadSecureFile@1
+      inputs:
+        secureFile: 'kubeconfig.yaml'
+
+    # Set KUBECONFIG environment variable to point to the downloaded kubeconfig
+    - script: |
+        export KUBECONFIG=$(System.DefaultWorkingDirectory)/_temp/kubeconfig.yaml
+        kubectl get nodes
+      displayName: 'Set Kubeconfig and Verify Cluster Access'
+
+    # Deploy the Kubernetes resources
     - task: Kubernetes@1
       inputs:
-        command: apply
+        connectionType: 'KubeConfig'
+        kubeconfig: '$(System.DefaultWorkingDirectory)/_temp/kubeconfig.yaml'
+        command: 'apply'
         arguments: '-f k8s/'
