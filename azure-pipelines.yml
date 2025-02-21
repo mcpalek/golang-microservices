@@ -111,14 +111,10 @@ stages:
         ssh -o StrictHostKeyChecking=no user@192.168.100.202 'sudo journalctl -u kube-apiserver --no-pager | tail -n 50' || echo "Failed to fetch logs!"
       displayName: 'Debug Kubernetes API (If Unreachable)'
 
-    # ✅ Deploy Kubernetes manifests
+    # ✅ Deploy Kubernetes 
     - script: |
         export KUBECONFIG=$(Agent.TempDirectory)/kubeconfig.yaml
         kubectl apply -f k8s/ || echo "Apply failed!"
       displayName: 'Apply Kubernetes Manifests'
 
-    # ✅ Use Kubernetes Task to deploy with the correct kubeconfig    # ✅ Deploy Kubernetes manifests using direct kubectl commands
-    - script: |
-        export KUBECONFIG=$(Agent.TempDirectory)/kubeconfig.yaml
-        kubectl apply -f k8s/ || echo "Apply failed!"
-      displayName: 'Apply Kubernetes Manifests'
+    
