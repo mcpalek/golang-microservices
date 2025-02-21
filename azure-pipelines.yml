@@ -37,14 +37,25 @@ stages:
         dockerfile: 'frontend_service/Dockerfile'
         buildContext: $(Build.SourcesDirectory)
         tags: latest
-- stage: Deploy
-  jobs:
+
   - job: Deploy
     steps:
+    # ✅ Download kubeconfig.yaml file
     - task: DownloadSecureFile@1
       inputs:
         secureFile: 'kubeconfig.yaml'
 
+    # ✅ Debugging step: Ensure kubeconfig is downloaded and accessible
+    - script: |
+        ls -lah $(Agent.TempDirectory)
+        cat $(Agent.TempDirectory)/kubeconfig.yaml
+      displayName: 'Debug: Check kubeconfig file'
+
+    # ✅ Verify the pipeline user
+    - script: whoami
+      displayName: 'Check Pipeline User'
+
+    # ✅ Set Kubeconfig and test cluster access
     - script: |
         chmod 600 $(Agent.TempDirectory)/kubeconfig.yaml
         export KUBECONFIG=$(Agent.TempDirectory)/kubeconfig.yaml
@@ -52,30 +63,42 @@ stages:
         kubectl get nodes
       displayName: 'Set Kubeconfig and Verify Cluster Access'
 
+    # ✅ Check Kubernetes API access (ensures network connectivity)
+    - script: |
+        curl -v -k https://192.168.100.202:6443
+      displayName: 'Check Kubernetes API Access'
+
+    # ✅ Deploy Kubernetes manifests
     - script: |
         export KUBECONFIG=$(Agent.TempDirectory)/kubeconfig.yaml
         kubectl apply -f k8s/
       displayName: 'Apply Kubernetes Manifests'
+
+    # ✅ Use Kubernetes Task to deploy with the correct kubeconfig
+    - task: Kubernetes@1
+      inputs:
+        connectionType: 'KubeConfig'
+        kubeconfig: '$(Agent.TempDirectory)/kubeconfig.yaml'
+        command: 'apply'
+        arguments: '-f k8s/'
+      displayName: 'Deploy using Kubernetes Task'
 # - stage: Deploy
 #   jobs:
 #   - job: Deploy
 #     steps:
-#     # Download the kubeconfig.yaml from secure files
 #     - task: DownloadSecureFile@1
 #       inputs:
 #         secureFile: 'kubeconfig.yaml'
 
-#     # Set KUBECONFIG environment variable to point to the downloaded kubeconfig
 #     - script: |
-#         #export KUBECONFIG=$(System.DefaultWorkingDirectory)/_temp/kubeconfig.yaml
+#         chmod 600 $(Agent.TempDirectory)/kubeconfig.yaml
 #         export KUBECONFIG=$(Agent.TempDirectory)/kubeconfig.yaml
-#         sudo kubectl get nodes
+#         kubectl config view
+#         kubectl get nodes
 #       displayName: 'Set Kubeconfig and Verify Cluster Access'
 
-#     # Deploy the Kubernetes resources
-#     - task: Kubernetes@1
-#       inputs:
-#         connectionType: 'KubeConfig'
-#         kubeconfig: '$(System.DefaultWorkingDirectory)/_temp/kubeconfig.yaml'
-#         command: 'apply'
-#         arguments: '-f k8s/'
+#     - script: |
+#         export KUBECONFIG=$(Agent.TempDirectory)/kubeconfig.yaml
+#         kubectl apply -f k8s/
+#       displayName: 'Apply Kubernetes Manifests'
+
