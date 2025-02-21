@@ -53,12 +53,12 @@ stages:
       displayName: 'Debug: Check kubeconfig file'
 
     # ✅ Set Kubeconfig and verify access
-    - script: |
-        chmod 600 $(Agent.TempDirectory)/kubeconfig.yaml
-        export KUBECONFIG=$(Agent.TempDirectory)/kubeconfig.yaml
-        kubectl cluster-info
-        kubectl get nodes
-      displayName: 'Verify Kubernetes Cluster Connection'
+    # - script: |
+    #     chmod 600 $(Agent.TempDirectory)/kubeconfig.yaml
+    #     export KUBECONFIG=$(Agent.TempDirectory)/kubeconfig.yaml
+    #     kubectl cluster-info
+    #     kubectl get nodes
+    #   displayName: 'Verify Kubernetes Cluster Connection'
 
     # ✅ Debug: Check if manifest files exist
     - script: |
