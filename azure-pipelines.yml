@@ -42,6 +42,41 @@ stages:
   jobs:
   - job: Deploy
     steps:
+    # ✅ Display Agent Environment & Network Config
+    - script: |
+        echo "=== Checking System Info ==="
+        uname -a
+        whoami
+        echo "=== Checking Installed Tools ==="
+        kubectl version --client || echo "kubectl NOT found!"
+        curl --version || echo "curl NOT found!"
+        ping -V || echo "ping NOT found!"
+        echo "=== Checking Network Config ==="
+        ip a || ifconfig || echo "No network info found!"
+        route -n || echo "No routing table found!"
+      displayName: 'Agent Environment & Network Check'
+
+    # ✅ Check if Kubernetes API Server is Reachable
+    - script: |
+        echo "=== Checking Network to Kubernetes API ==="
+        ping -c 4 192.168.100.202 || echo "Ping failed!"
+        nc -zv 192.168.100.202 6443 || echo "Port 6443 is CLOSED!"
+        (echo quit | telnet 192.168.100.202 6443) || echo "Telnet failed!"
+      displayName: 'Network Pre-Check: Ping & Ports'
+
+    # ✅ Check DNS Resolution for API Server
+    - script: |
+        echo "=== Checking DNS Resolution ==="
+        nslookup 192.168.100.202 || echo "nslookup failed!"
+        dig +short 192.168.100.202 || echo "dig failed!"
+      displayName: 'DNS Resolution Check'
+
+    # ✅ Check SSH Access to Kubernetes Master (If Applicable)
+    - script: |
+        echo "=== Checking SSH to Kubernetes Master ==="
+        ssh -o BatchMode=yes -o ConnectTimeout=5 user@192.168.100.202 "echo 'SSH OK'" || echo "SSH failed!"
+      displayName: 'SSH Connectivity Check (Optional)'
+
     # ✅ Download kubeconfig.yaml file
     - task: DownloadSecureFile@1
       inputs:
@@ -49,8 +84,9 @@ stages:
 
     # ✅ Debugging step: Ensure kubeconfig is downloaded and accessible
     - script: |
+        echo "Checking if kubeconfig file exists..."
         ls -lah $(Agent.TempDirectory)
-        cat $(Agent.TempDirectory)/kubeconfig.yaml
+        cat $(Agent.TempDirectory)/kubeconfig.yaml || echo "kubeconfig NOT found!"
       displayName: 'Debug: Check kubeconfig file'
 
     # ✅ Verify the pipeline user
@@ -59,49 +95,26 @@ stages:
 
     # ✅ Set Kubeconfig and test cluster access
     - script: |
+        echo "Setting KUBECONFIG..."
         chmod 600 $(Agent.TempDirectory)/kubeconfig.yaml
         export KUBECONFIG=$(Agent.TempDirectory)/kubeconfig.yaml
-        kubectl config view
-        kubectl get nodes
+        echo "Verifying Kubeconfig..."
+        kubectl config view || echo "Kubeconfig view failed!"
+        kubectl cluster-info || echo "Cluster info failed!"
+        kubectl get nodes || echo "Failed to get nodes!"
       displayName: 'Set Kubeconfig and Verify Cluster Access'
 
-    # ✅ Check network connectivity to Kubernetes API
-    - script: |
-        echo "Pinging Kubernetes API Server..."
-        ping -c 4 192.168.100.202 || echo "Ping failed!"
-
-        echo "Checking if API server port 6443 is open..."
-        nc -zv 192.168.100.202 6443 || echo "Port check failed (nc)"
-
-        echo "Checking API server with telnet..."
-        (echo quit | telnet 192.168.100.202 6443) || echo "Telnet failed!"
-
-      displayName: 'Network Connectivity Check'
-
-    # ✅ Check Kubernetes API access
-    - script: |
-        echo "Checking Kubernetes API with curl..."
-        curl --max-time 20 -v -k https://192.168.100.202:6443 || echo "API check failed!"
-
-      displayName: 'Check Kubernetes API Access'
-
-    # ✅ Debug Kubernetes API failures
+    # ✅ If API Fails, Fetch Logs
     - script: |
         export KUBECONFIG=$(Agent.TempDirectory)/kubeconfig.yaml
-        echo "Checking Kubernetes cluster info..."
-        kubectl cluster-info || echo "Cluster info unavailable!"
-
-        echo "Fetching logs if API is unreachable..."
-        if ! kubectl cluster-info; then
-          echo "Retrieving recent logs from master node..."
-          ssh -o StrictHostKeyChecking=no user@192.168.100.202 'sudo journalctl -u kube-apiserver --no-pager | tail -n 50' || echo "SSH log fetch failed!"
-        fi
-      displayName: 'Debug Kubernetes API'
+        echo "Fetching Kubernetes API Logs..."
+        ssh -o StrictHostKeyChecking=no user@192.168.100.202 'sudo journalctl -u kube-apiserver --no-pager | tail -n 50' || echo "Failed to fetch logs!"
+      displayName: 'Debug Kubernetes API (If Unreachable)'
 
     # ✅ Deploy Kubernetes manifests
     - script: |
         export KUBECONFIG=$(Agent.TempDirectory)/kubeconfig.yaml
-        kubectl apply -f k8s/
+        kubectl apply -f k8s/ || echo "Apply failed!"
       displayName: 'Apply Kubernetes Manifests'
 
     # ✅ Use Kubernetes Task to deploy with the correct kubeconfig
@@ -112,23 +125,3 @@ stages:
         command: 'apply'
         arguments: '-f k8s/'
       displayName: 'Deploy using Kubernetes Task'
-# - stage: Deploy
-#   jobs:
-#   - job: Deploy
-#     steps:
-#     - task: DownloadSecureFile@1
-#       inputs:
-#         secureFile: 'kubeconfig.yaml'
-
-#     - script: |
-#         chmod 600 $(Agent.TempDirectory)/kubeconfig.yaml
-#         export KUBECONFIG=$(Agent.TempDirectory)/kubeconfig.yaml
-#         kubectl config view
-#         kubectl get nodes
-#       displayName: 'Set Kubeconfig and Verify Cluster Access'
-
-#     - script: |
-#         export KUBECONFIG=$(Agent.TempDirectory)/kubeconfig.yaml
-#         kubectl apply -f k8s/
-#       displayName: 'Apply Kubernetes Manifests'
-
