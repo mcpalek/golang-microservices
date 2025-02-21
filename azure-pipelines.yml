@@ -68,8 +68,9 @@ stages:
     # ✅ Apply Kubernetes base configurations (ConfigMaps, Secrets, Services)
     - script: |
         export KUBECONFIG=$(Agent.TempDirectory)/kubeconfig.yaml
-        kubectl apply -f k8s/configs/
+        kubectl apply -f k8s/configmap.yaml
       displayName: 'Apply Kubernetes Configs'
+
 
     # ✅ Deploy DB Service
     - script: |
