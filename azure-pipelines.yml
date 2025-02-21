@@ -38,6 +38,8 @@ stages:
         buildContext: $(Build.SourcesDirectory)
         tags: latest
 
+- stage: Deploy
+  jobs:
   - job: Deploy
     steps:
     # ✅ Download kubeconfig.yaml file
@@ -63,10 +65,38 @@ stages:
         kubectl get nodes
       displayName: 'Set Kubeconfig and Verify Cluster Access'
 
-    # ✅ Check Kubernetes API access (ensures network connectivity)
+    # ✅ Check network connectivity to Kubernetes API
     - script: |
-        curl -v -k https://192.168.100.202:6443
+        echo "Pinging Kubernetes API Server..."
+        ping -c 4 192.168.100.202 || echo "Ping failed!"
+
+        echo "Checking if API server port 6443 is open..."
+        nc -zv 192.168.100.202 6443 || echo "Port check failed (nc)"
+
+        echo "Checking API server with telnet..."
+        (echo quit | telnet 192.168.100.202 6443) || echo "Telnet failed!"
+
+      displayName: 'Network Connectivity Check'
+
+    # ✅ Check Kubernetes API access
+    - script: |
+        echo "Checking Kubernetes API with curl..."
+        curl --max-time 20 -v -k https://192.168.100.202:6443 || echo "API check failed!"
+
       displayName: 'Check Kubernetes API Access'
+
+    # ✅ Debug Kubernetes API failures
+    - script: |
+        export KUBECONFIG=$(Agent.TempDirectory)/kubeconfig.yaml
+        echo "Checking Kubernetes cluster info..."
+        kubectl cluster-info || echo "Cluster info unavailable!"
+
+        echo "Fetching logs if API is unreachable..."
+        if ! kubectl cluster-info; then
+          echo "Retrieving recent logs from master node..."
+          ssh -o StrictHostKeyChecking=no user@192.168.100.202 'sudo journalctl -u kube-apiserver --no-pager | tail -n 50' || echo "SSH log fetch failed!"
+        fi
+      displayName: 'Debug Kubernetes API'
 
     # ✅ Deploy Kubernetes manifests
     - script: |
