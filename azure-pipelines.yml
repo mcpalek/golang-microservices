@@ -7,6 +7,9 @@ stages:
 - stage: Build
   jobs:
   - job: Build
+    pool:
+      demands:
+      - agent.name -equals ubuntu-desktop
     steps:
     # Build and push db_service
     - task: Docker@2
@@ -40,6 +43,9 @@ stages:
 - stage: Deploy
   jobs:
   - job: Deploy
+    pool:
+      demands:
+      - agent.name -equals ubuntu-desktop
     steps:
     
      # ✅ Display the Default Working Directory
