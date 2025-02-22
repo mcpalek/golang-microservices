@@ -12,6 +12,8 @@ spec:
       labels:
         app: db-service
     spec:
+      imagePullSecrets:
+        - name: acr-secret 
       containers:
         - name: db-service
           image: golang.azurecr.io/db_service:latest
