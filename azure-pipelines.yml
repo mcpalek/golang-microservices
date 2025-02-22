@@ -162,13 +162,13 @@ stages:
          kubectl rollout status deployment/frontend-service
        displayName: 'Wait for Deployments to be Ready'
 
-     # ✅ Publish Artifact: Save kubeconfig.yaml and other debug files
-     - task: PublishBuildArtifacts@1
-       inputs:
-         artifactName: 'k8s-deployment-debug'
-         publishLocation: 'Container'
-         targetPath: '$(Agent.TempDirectory)'
-       displayName: 'Publish Debug Artifacts'
+    #  # ✅ Publish Artifact: Save kubeconfig.yaml and other debug files
+    #  - task: PublishBuildArtifacts@1
+    #    inputs:
+    #      artifactName: 'k8s-deployment-debug'
+    #      publishLocation: 'Container'
+    #      targetPath: '$(Agent.TempDirectory)'
+    #    displayName: 'Publish Debug Artifacts'
 
 
 # - stage: Deploy
