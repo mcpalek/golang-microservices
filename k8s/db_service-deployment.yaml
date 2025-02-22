@@ -16,7 +16,7 @@ spec:
         - name: acr-secret 
       containers:
         - name: db-service
-          image: golang.azurecr.io/db_service:latest
+          image: golang.azurecr.io/db_service:447
           ports:
             - containerPort: 1433  # Exposes the SQL Server port inside the container
           volumeMounts:
