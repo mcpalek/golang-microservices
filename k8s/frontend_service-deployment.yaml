@@ -33,5 +33,5 @@ spec:
     - protocol: TCP
       port: 8082
       targetPort: 8082
-      nodePort: 30002
+      nodePort: 30003
   type: NodePort #ClusterIP  # Exposes the service inside the cluster
