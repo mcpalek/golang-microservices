@@ -41,6 +41,18 @@ stages:
   jobs:
   - job: Deploy
     steps:
+    
+     # ✅ Display the Default Working Directory
+     - script: |
+         echo "Default Working Directory: $(System.DefaultWorkingDirectory)"
+       displayName: 'Display Default Working Directory'
+
+     # ✅ Display files in the k8s directory before deployment
+     - script: |
+         echo "Listing files in k8s directory:"
+         ls -lah $(System.DefaultWorkingDirectory)/k8s || echo "No k8s directory found!"
+       displayName: 'List files in k8s directory'
+
      # ✅ Display Agent Environment & Network Config
      - script: |
          echo "=== Checking System Info ==="
@@ -110,40 +122,28 @@ stages:
          ssh -o StrictHostKeyChecking=no user@192.168.100.202 'sudo journalctl -u kube-apiserver --no-pager | tail -n 50' || echo "Failed to fetch logs!"
        displayName: 'Debug Kubernetes API (If Unreachable)'
 
-     # ✅ List Files in k8s Directory
-     - script: |
-         echo "=== Listing Files in k8s Directory ==="
-         ls -lah k8s/
-       displayName: 'List Files in k8s Directory'
-
-     # ✅ Display Content of configmap.yaml
-     - script: |
-         echo "=== Displaying Content of configmap.yaml ==="
-         cat k8s/configmap.yaml
-       displayName: 'Display Content of configmap.yaml'
-
      # ✅ Apply Kubernetes base configurations (ConfigMaps, Secrets, Services)
      - script: |
          export KUBECONFIG=$(Agent.TempDirectory)/kubeconfig.yaml
-         kubectl apply -f k8s/configmap.yaml
+         kubectl apply -f $(System.DefaultWorkingDirectory)/k8s/configmap.yaml
        displayName: 'Apply Kubernetes Configs'
 
      # ✅ Deploy DB Service
      - script: |
          export KUBECONFIG=$(Agent.TempDirectory)/kubeconfig.yaml
-         kubectl apply -f k8s/db_service-deployment.yaml
+         kubectl apply -f $(System.DefaultWorkingDirectory)/k8s/db_service-deployment.yaml
        displayName: 'Deploy DB Service'
 
      # ✅ Deploy Web Service
      - script: |
          export KUBECONFIG=$(Agent.TempDirectory)/kubeconfig.yaml
-         kubectl apply -f k8s/web_service-deployment.yaml
+         kubectl apply -f $(System.DefaultWorkingDirectory)/k8s/web_service-deployment.yaml
        displayName: 'Deploy Web Service'
 
      # ✅ Deploy Frontend Service
      - script: |
          export KUBECONFIG=$(Agent.TempDirectory)/kubeconfig.yaml
-         kubectl apply -f k8s/frontend_service-deployment.yaml
+         kubectl apply -f $(System.DefaultWorkingDirectory)/k8s/frontend_service-deployment.yaml
        displayName: 'Deploy Frontend Service'
 
      # ✅ Wait for deployments to be ready
@@ -153,6 +153,15 @@ stages:
          kubectl rollout status deployment/web-service
          kubectl rollout status deployment/frontend-service
        displayName: 'Wait for Deployments to be Ready'
+
+     # ✅ Publish Artifact: Save kubeconfig.yaml and other debug files
+     - task: PublishBuildArtifacts@1
+       inputs:
+         artifactName: 'k8s-deployment-debug'
+         publishLocation: 'Container'
+         targetPath: '$(Agent.TempDirectory)'
+       displayName: 'Publish Debug Artifacts'
+
 
 # - stage: Deploy
 #   jobs:
