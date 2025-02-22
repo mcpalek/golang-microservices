@@ -12,6 +12,8 @@ spec:
       labels:
         app: web-service
     spec:
+      imagePullSecrets:
+        - name: acr-secret 
       containers:
         - name: web-service
           image: golang.azurecr.io/web_service:latest
