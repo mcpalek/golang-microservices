@@ -8,6 +8,7 @@ stages:
   jobs:
   - job: Build
     pool:
+      name: 'Default'
       demands:
       - agent.name -equals ubuntu-desktop
     steps:
@@ -44,6 +45,7 @@ stages:
   jobs:
   - job: Deploy
     pool:
+      name: 'Default'
       demands:
       - agent.name -equals ubuntu-desktop
     steps:
