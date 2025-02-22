@@ -16,7 +16,7 @@ spec:
         - name: acr-secret 
       containers:
         - name: frontend-service
-          image: golang.azurecr.io/frontend-service:latest
+          image: golang.azurecr.io/frontend-service:447
           ports:
             - containerPort: 8082
           env:
