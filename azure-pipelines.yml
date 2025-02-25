@@ -71,17 +71,23 @@ stages:
         displayName: 'Deploy or Update DB Service'
 
       - script: |
-          # Get the current image used by the deployment
-          current_image=$(kubectl get deployment web-service -o=jsonpath='{.spec.template.spec.containers[0].image}')
-          expected_image="MyAzureContainerRegistry/web_service:458"
+          # Check if the web-service deployment exists
+          if kubectl get deployment web-service &> /dev/null; then
+            # Get the current image used by the deployment
+            current_image=$(kubectl get deployment web-service -o=jsonpath='{.spec.template.spec.containers[0].image}')
+            expected_image="MyAzureContainerRegistry/web_service:458"
 
-          # If the current image is the same as expected, skip deployment
-          if [[ "$current_image" == "$expected_image" ]]; then
-            echo "web-service is already using the correct image: $expected_image"
+            # If the current image is the same as expected, skip deployment
+            if [[ "$current_image" == "$expected_image" ]]; then
+              echo "web-service is already using the correct image: $expected_image"
+            else
+              # If the image is different, update the deployment with the correct image
+              kubectl set image deployment/web-service web-service=$expected_image --record
+              kubectl rollout status deployment/web-service
+            fi
           else
-            # If the image is different, update the deployment with the correct image
-            kubectl set image deployment/web-service web-service=$expected_image --record
-            kubectl rollout status deployment/web-service
+            # If the deployment does not exist, create it using the YAML
+            kubectl apply -f $(System.DefaultWorkingDirectory)/k8s/web_service-deployment.yaml
           fi
         displayName: 'Deploy or Update Web Service'
 
