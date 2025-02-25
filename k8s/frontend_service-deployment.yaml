@@ -16,7 +16,7 @@ spec:
         - name: acr-secret 
       containers:
         - name: frontend-service
-          image: golang.azurecr.io/frontend_service:473
+          image: golang.azurecr.io/frontend_service:474
           imagePullPolicy: Always
           ports:
             - containerPort: 8082
