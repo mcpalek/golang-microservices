@@ -17,6 +17,7 @@ spec:
       containers:
         - name: frontend-service
           image: golang.azurecr.io/frontend_service:473
+          imagePullPolicy: Always
           ports:
             - containerPort: 8082
           env:
