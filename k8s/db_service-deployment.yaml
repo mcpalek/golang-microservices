@@ -14,6 +14,8 @@ spec:
     spec:
       imagePullSecrets:
         - name: acr-secret 
+      securityContext:  # <-- Move fsGroup here (Pod level)
+        fsGroup: 1000
       containers:
         - name: db-service
           image: golang.azurecr.io/db_service:448
@@ -36,10 +38,9 @@ spec:
             limits:
               memory: "512Mi"
               cpu: "500m"
-          securityContext:
+          securityContext:  # Container-level security context
             runAsUser: 1000
             runAsGroup: 1000
-            fsGroup: 1000
           livenessProbe:
             tcpSocket:
               port: 1433
