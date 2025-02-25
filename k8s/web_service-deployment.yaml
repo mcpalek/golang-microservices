@@ -16,7 +16,7 @@ spec:
         - name: acr-secret 
       containers:
         - name: web-service
-          image: golang.azurecr.io/web_service:448
+          image: golang.azurecr.io/web_service:458
           ports:
             - containerPort: 8081  # Exposes port 8081 for the web-service container
           env:
