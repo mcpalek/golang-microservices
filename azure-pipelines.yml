@@ -93,7 +93,7 @@ stages:
           if kubectl get deployment frontend-service &> /dev/null; then
             current_image=$(kubectl get deployment frontend-service -o=jsonpath='{.spec.template.spec.containers[0].image}')
             if [[ "$current_image" != "MyAzureContainerRegistry/frontend_service:474" ]]; then
-              kubectl set image deployment/frontend-service frontend-service=MyAzureContainerRegistry/frontend_service:474
+              kubectl set image deployment/frontend-service frontend-service=golang.azurecr.io/frontend_service:474
               kubectl rollout status deployment/frontend-service
             else
               echo "frontend-service is already using the correct image."
