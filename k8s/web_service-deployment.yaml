@@ -19,6 +19,32 @@ spec:
           image: golang.azurecr.io/web_service:448
           ports:
             - containerPort: 8081  # Exposes port 8081 for the web-service container
+          env:
+            - name: SQLSERVER_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: sqlserver-config
+                  key: SQLSERVER_HOST
+            - name: SQLSERVER_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: sqlserver-config
+                  key: SQLSERVER_PORT
+            - name: SQLSERVER_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: sqlserver-config
+                  key: SQLSERVER_USER
+            - name: SQLSERVER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: sqlserver-secret
+                  key: SQLSERVER_PASSWORD
+            - name: SQLSERVER_DATABASE
+              valueFrom:
+                configMapKeyRef:
+                  name: sqlserver-config
+                  key: SQLSERVER_DATABASE
           volumeMounts:
             - name: config-volume
               mountPath: /app/config.json
@@ -40,5 +66,49 @@ spec:
     - protocol: TCP
       port: 8081  # This is the port the web-service will be exposed on
       targetPort: 8081  # The port the container listens on
-      nodePort: 30002
-  type: NodePort #ClusterIP  # Expose the service inside the cluster (default)
+      nodePort
+
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   name: web-service
+# spec:
+#   replicas: 1
+#   selector:
+#     matchLabels:
+#       app: web-service
+#   template:
+#     metadata:
+#       labels:
+#         app: web-service
+#     spec:
+#       imagePullSecrets:
+#         - name: acr-secret 
+#       containers:
+#         - name: web-service
+#           image: golang.azurecr.io/web_service:448
+#           ports:
+#             - containerPort: 8081  # Exposes port 8081 for the web-service container
+#           volumeMounts:
+#             - name: config-volume
+#               mountPath: /app/config.json
+#               subPath: config.json
+#       volumes:
+#         - name: config-volume
+#           configMap:
+#             name: sqlserver-config
+
+# ---
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: web-service
+# spec:
+#   selector:
+#     app: web-service
+#   ports:
+#     - protocol: TCP
+#       port: 8081  # This is the port the web-service will be exposed on
+#       targetPort: 8081  # The port the container listens on
+#       nodePort: 30002
+#   type: NodePort #ClusterIP  # Expose the service inside the cluster (default)
