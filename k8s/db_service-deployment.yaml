@@ -18,15 +18,10 @@ spec:
         - name: db-service
           image: golang.azurecr.io/db_service:448
           ports:
-            - containerPort: 1433  # Exposes the SQL Server port inside the container
-          volumeMounts:
-            - name: config-volume
-              mountPath: /app/config.json
-              subPath: config.json
-      volumes:
-        - name: config-volume
-          configMap:
-            name: sqlserver-config
+            - containerPort: 1433
+          envFrom:
+            - configMapRef:
+                name: sqlserver-env
 
 ---
 apiVersion: v1
