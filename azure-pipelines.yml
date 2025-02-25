@@ -45,7 +45,7 @@ stages:
         dockerfile: 'frontend_service/Dockerfile'
         buildContext: $(Build.SourcesDirectory)
         tags: |
-          469
+          470
           latest
 
 - stage: Deploy
