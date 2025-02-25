@@ -17,6 +17,7 @@ spec:
       containers:
         - name: web-service
           image: golang.azurecr.io/web_service:458
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8081  # Exposes port 8081 for the web-service container
           env:
