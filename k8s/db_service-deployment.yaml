@@ -1,4 +1,3 @@
-
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -26,6 +25,43 @@ spec:
                   key: SQLSERVER_HOST
             - name: SQLSERVER_PORT
               valueFrom:
+                configMapKeyRef:
+                  name: sqlserver-env
+                  key: SQLSERVER_PORT
+            - name: SQLSERVER_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: sqlserver-env
+                  key: SQLSERVER_USER
+            - name: SQLSERVER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: sqlserver-secret
+                  key: SQLSERVER_PASSWORD
+            - name: SQLSERVER_DATABASE
+              valueFrom:
+                configMapKeyRef:
+                  name: sqlserver-env
+                  key: SQLSERVER_DATABASE
+          volumeMounts:
+            - name: config-volume
+              mountPath: /app/config.json
+              subPath: config.json
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          securityContext:
+            runAsUser: 1000
+            runAsGroup: 1000
+      volumes:
+        - name: config-volume
+          configMap:
+            name: db-config
+
        
 
 # apiVersion: apps/v1
