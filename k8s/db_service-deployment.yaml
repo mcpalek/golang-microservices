@@ -22,7 +22,8 @@ spec:
           envFrom:
             - configMapRef:
                 name: sqlserver-env
-
+            - secretRef:
+                name: sqlserver-secret
 ---
 apiVersion: v1
 kind: Service
