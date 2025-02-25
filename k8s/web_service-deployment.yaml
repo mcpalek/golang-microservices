@@ -23,17 +23,17 @@ spec:
             - name: SQLSERVER_HOST
               valueFrom:
                 configMapKeyRef:
-                  name: sqlserver-config
+                  name: sqlserver-env
                   key: SQLSERVER_HOST
             - name: SQLSERVER_PORT
               valueFrom:
                 configMapKeyRef:
-                  name: sqlserver-config
+                  name: sqlserver-env
                   key: SQLSERVER_PORT
             - name: SQLSERVER_USER
               valueFrom:
                 configMapKeyRef:
-                  name: sqlserver-config
+                  name: sqlserver-env
                   key: SQLSERVER_USER
             - name: SQLSERVER_PASSWORD
               valueFrom:
@@ -43,7 +43,7 @@ spec:
             - name: SQLSERVER_DATABASE
               valueFrom:
                 configMapKeyRef:
-                  name: sqlserver-config
+                  name: sqlserver-env
                   key: SQLSERVER_DATABASE
           volumeMounts:
             - name: config-volume
