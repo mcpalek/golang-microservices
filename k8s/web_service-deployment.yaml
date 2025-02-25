@@ -67,7 +67,7 @@ spec:
       port: 8081  # This is the port the web-service will be exposed on
       targetPort: 8081  # The port the container listens on
       nodePort: 30002
-   type: NodePort     
+  type: NodePort     
 
 # apiVersion: apps/v1
 # kind: Deployment
