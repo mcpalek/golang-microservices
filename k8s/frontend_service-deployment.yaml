@@ -21,7 +21,8 @@ spec:
             - containerPort: 8082
           env:
             - name: BACKEND_URL
-              value: "http://web-service:8081/users"  # Change to the web service URL
+              value: "http://web-service.default.svc.cluster.local:8081/users"  #"http://web-service:8081/users"  # Change to the web service URL
+            
 
 ---
 apiVersion: v1
