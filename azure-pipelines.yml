@@ -60,21 +60,37 @@ stages:
       - script: |
           kubectl apply -f $(System.DefaultWorkingDirectory)/k8s/configmap.yaml
         displayName: 'Apply Kubernetes Configs'
-      
-      # Deploy db_service
+       # Rollout update db_service
       - script: |
-          kubectl apply -f $(System.DefaultWorkingDirectory)/k8s/db_service-deployment.yaml
-        displayName: 'Deploy DB Service'
+          kubectl set image deployment/db-service db-service=MyAzureContainerRegistry/db_service:448
+          kubectl rollout status deployment/db-service
+        displayName: 'Rollout Update DB Service'
       
-      # Deploy web_service
+      # Rollout update web_service
       - script: |
-          kubectl apply -f $(System.DefaultWorkingDirectory)/k8s/web_service-deployment.yaml
-        displayName: 'Deploy Web Service'
+          kubectl set image deployment/web-service web-service=MyAzureContainerRegistry/web_service:448
+          kubectl rollout status deployment/web-service
+        displayName: 'Rollout Update Web Service'
       
-      # Deploy frontend_service
+      # Rollout update frontend_service
       - script: |
-          kubectl apply -f $(System.DefaultWorkingDirectory)/k8s/frontend_service-deployment.yaml
-        displayName: 'Deploy Frontend Service'
+          kubectl set image deployment/frontend-service frontend-service=MyAzureContainerRegistry/frontend_service:448
+          kubectl rollout status deployment/frontend-service
+        displayName: 'Rollout Update Frontend Service'     
+      # # Deploy db_service
+      # - script: |
+      #     kubectl apply -f $(System.DefaultWorkingDirectory)/k8s/db_service-deployment.yaml
+      #   displayName: 'Deploy DB Service'
+      
+      # # Deploy web_service
+      # - script: |
+      #     kubectl apply -f $(System.DefaultWorkingDirectory)/k8s/web_service-deployment.yaml
+      #   displayName: 'Deploy Web Service'
+      
+      # # Deploy frontend_service
+      # - script: |
+      #     kubectl apply -f $(System.DefaultWorkingDirectory)/k8s/frontend_service-deployment.yaml
+      #   displayName: 'Deploy Frontend Service'
 
 # trigger:
 #   branches:
