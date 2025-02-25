@@ -21,7 +21,7 @@ stages:
         dockerfile: 'db_service/Dockerfile'
         buildContext: $(Build.SourcesDirectory)
         tags: |
-          447
+          448
           latest
 
     # Build and push web_service
@@ -33,7 +33,7 @@ stages:
         dockerfile: 'web_service/Dockerfile'
         buildContext: $(Build.SourcesDirectory)
         tags: |
-          447
+          448
           latest
 
     # Build and push frontend_service
@@ -45,7 +45,7 @@ stages:
         dockerfile: 'frontend_service/Dockerfile'
         buildContext: $(Build.SourcesDirectory)
         tags: |
-          447
+          448
           latest
 
 - stage: Deploy
