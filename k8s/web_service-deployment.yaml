@@ -52,7 +52,7 @@ spec:
       volumes:
         - name: config-volume
           configMap:
-            name: sqlserver-config
+            name: sqlserver-env
 
 ---
 apiVersion: v1
