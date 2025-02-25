@@ -45,7 +45,7 @@ stages:
         dockerfile: 'frontend_service/Dockerfile'
         buildContext: $(Build.SourcesDirectory)
         tags: |
-          461
+          462
           latest
 
 - stage: Deploy
@@ -83,7 +83,7 @@ stages:
       # Check and deploy/update frontend_service
       - script: |
           if kubectl get deployment frontend-service &> /dev/null; then
-            kubectl set image deployment/frontend-service frontend-service=MyAzureContainerRegistry/frontend_service:461
+            kubectl set image deployment/frontend-service frontend-service=MyAzureContainerRegistry/frontend_service:462
             kubectl rollout status deployment/frontend-service
           else
             kubectl apply -f $(System.DefaultWorkingDirectory)/k8s/frontend_service-deployment.yaml
