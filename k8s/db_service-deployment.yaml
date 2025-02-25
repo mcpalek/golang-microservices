@@ -1,5 +1,4 @@
 apiVersion: apps/v1
-apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: db-service
@@ -18,6 +17,7 @@ spec:
       containers:
         - name: db-service
           image: golang.azurecr.io/db_service:448
+          imagePullPolicy: Always
           ports:
             - containerPort: 1433
           envFrom:
@@ -29,6 +29,27 @@ spec:
                 secretKeyRef:
                   name: sqlserver-secret
                   key: SQL_SERVER_PASSWORD
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          securityContext:
+            runAsUser: 1000
+            runAsGroup: 1000
+            fsGroup: 1000
+          livenessProbe:
+            tcpSocket:
+              port: 1433
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            tcpSocket:
+              port: 1433
+            initialDelaySeconds: 15
+            periodSeconds: 5
 
 ---
 apiVersion: v1
