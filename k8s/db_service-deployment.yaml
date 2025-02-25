@@ -1,4 +1,5 @@
 apiVersion: apps/v1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: db-service
@@ -22,8 +23,13 @@ spec:
           envFrom:
             - configMapRef:
                 name: sqlserver-env
-            - secretRef:
-                name: sqlserver-secret
+          env:
+            - name: SQL_SERVER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: sqlserver-secret
+                  key: SQL_SERVER_PASSWORD
+
 ---
 apiVersion: v1
 kind: Service
