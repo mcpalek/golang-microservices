@@ -14,7 +14,7 @@ spec:
     spec:
       imagePullSecrets:
         - name: acr-secret 
-      securityContext:  # <-- Move fsGroup here (Pod level)
+      securityContext:
         fsGroup: 1000
       containers:
         - name: db-service
@@ -22,15 +22,36 @@ spec:
           imagePullPolicy: Always
           ports:
             - containerPort: 1433
-          envFrom:
-            - configMapRef:
-                name: sqlserver-env
           env:
-            - name: SQL_SERVER_PASSWORD
+            - name: SQLSERVER_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: sqlserver-env
+                  key: SQLSERVER_HOST
+            - name: SQLSERVER_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: sqlserver-env
+                  key: SQLSERVER_PORT
+            - name: SQLSERVER_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: sqlserver-env
+                  key: SQLSERVER_USER
+            - name: SQLSERVER_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: sqlserver-secret
-                  key: SQL_SERVER_PASSWORD
+                  key: SQLSERVER_PASSWORD
+            - name: SQLSERVER_DATABASE
+              valueFrom:
+                configMapKeyRef:
+                  name: sqlserver-env
+                  key: SQLSERVER_DATABASE
+          volumeMounts:
+            - name: config-volume
+              mountPath: /app/config.json
+              subPath: config.json
           resources:
             requests:
               memory: "256Mi"
@@ -38,7 +59,7 @@ spec:
             limits:
               memory: "512Mi"
               cpu: "500m"
-          securityContext:  # Container-level security context
+          securityContext:
             runAsUser: 1000
             runAsGroup: 1000
           livenessProbe:
@@ -51,6 +72,10 @@ spec:
               port: 1433
             initialDelaySeconds: 15
             periodSeconds: 5
+      volumes:
+        - name: config-volume
+          configMap:
+            name: db-config
 
 ---
 apiVersion: v1
