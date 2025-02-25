@@ -45,7 +45,7 @@ stages:
         dockerfile: 'frontend_service/Dockerfile'
         buildContext: $(Build.SourcesDirectory)
         tags: |
-          463
+          464
           latest
 
 - stage: Deploy
@@ -88,8 +88,8 @@ stages:
       - script: |
           if kubectl get deployment frontend-service &> /dev/null; then
             current_image=$(kubectl get deployment frontend-service -o=jsonpath='{.spec.template.spec.containers[0].image}')
-            if [[ "$current_image" != "MyAzureContainerRegistry/frontend_service:463" ]]; then
-              kubectl set image deployment/frontend-service frontend-service=MyAzureContainerRegistry/frontend_service:463
+            if [[ "$current_image" != "MyAzureContainerRegistry/frontend_service:464" ]]; then
+              kubectl set image deployment/frontend-service frontend-service=MyAzureContainerRegistry/frontend_service:464
               kubectl rollout status deployment/frontend-service
             else
               echo "frontend-service is already using the correct image."
