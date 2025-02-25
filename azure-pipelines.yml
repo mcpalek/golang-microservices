@@ -71,23 +71,20 @@ stages:
         displayName: 'Deploy or Update DB Service'
 
       - script: |
-          if kubectl get deployment web-service &> /dev/null; then
-            current_image=$(kubectl get deployment web-service -o=jsonpath='{.spec.template.spec.containers[0].image}')
-            expected_image="MyAzureContainerRegistry/web_service:458"
-            
-            # Compare the image version directly
-            if [[ "$current_image" != "$expected_image" ]]; then
-              echo "Image mismatch detected. Updating web-service to $expected_image."
-              kubectl set image deployment/web-service web-service=$expected_image --record
-              kubectl rollout status deployment/web-service
-            else
-              echo "web-service is already running the correct image ($expected_image), skipping update."
-            fi
+          # Get the current image used by the deployment
+          current_image=$(kubectl get deployment web-service -o=jsonpath='{.spec.template.spec.containers[0].image}')
+          expected_image="MyAzureContainerRegistry/web_service:458"
+
+          # If the current image is the same as expected, skip deployment
+          if [[ "$current_image" == "$expected_image" ]]; then
+            echo "web-service is already using the correct image: $expected_image"
           else
-            echo "web-service deployment not found. Applying the initial deployment."
-            kubectl apply -f $(System.DefaultWorkingDirectory)/k8s/web_service-deployment.yaml
+            # If the image is different, update the deployment with the correct image
+            kubectl set image deployment/web-service web-service=$expected_image --record
+            kubectl rollout status deployment/web-service
           fi
         displayName: 'Deploy or Update Web Service'
+
 
 
       # Deploy frontend_service
