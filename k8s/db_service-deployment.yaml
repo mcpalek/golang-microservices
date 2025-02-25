@@ -1,12 +1,9 @@
-apiVersion: apps/v1
-kind: Deployment
+
+apiVersion: batch/v1
+kind: Job
 metadata:
-  name: db-service
+  name: db-service-job
 spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: db-service
   template:
     metadata:
       labels:
@@ -16,12 +13,11 @@ spec:
         - name: acr-secret 
       securityContext:
         fsGroup: 1000
+      restartPolicy: Never  # Ensure the Job runs once and exits
       containers:
         - name: db-service
           image: golang.azurecr.io/db_service:448
           imagePullPolicy: Always
-          ports:
-            - containerPort: 1433
           env:
             - name: SQLSERVER_HOST
               valueFrom:
@@ -30,63 +26,97 @@ spec:
                   key: SQLSERVER_HOST
             - name: SQLSERVER_PORT
               valueFrom:
-                configMapKeyRef:
-                  name: sqlserver-env
-                  key: SQLSERVER_PORT
-            - name: SQLSERVER_USER
-              valueFrom:
-                configMapKeyRef:
-                  name: sqlserver-env
-                  key: SQLSERVER_USER
-            - name: SQLSERVER_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: sqlserver-secret
-                  key: SQLSERVER_PASSWORD
-            - name: SQLSERVER_DATABASE
-              valueFrom:
-                configMapKeyRef:
-                  name: sqlserver-env
-                  key: SQLSERVER_DATABASE
-          volumeMounts:
-            - name: config-volume
-              mountPath: /app/config.json
-              subPath: config.json
-          resources:
-            requests:
-              memory: "256Mi"
-              cpu: "250m"
-            limits:
-              memory: "512Mi"
-              cpu: "500m"
-          securityContext:
-            runAsUser: 1000
-            runAsGroup: 1000
-          livenessProbe:
-            tcpSocket:
-              port: 1433
-            initialDelaySeconds: 30
-            periodSeconds: 10
-          readinessProbe:
-            tcpSocket:
-              port: 1433
-            initialDelaySeconds: 15
-            periodSeconds: 5
-      volumes:
-        - name: config-volume
-          configMap:
-            name: db-config
+       
 
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: db-service
-spec:
-  selector:
-    app: db-service
-  ports:
-    - protocol: TCP
-      port: 1433  # Exposes the SQL Server port
-      targetPort: 1433  # Container port where SQL Server is listening
-  type: ClusterIP  # Ostavio sam ga da bude ClusterIP na taj nachin pristup bazi je moguch samo iz clustera a ne i spolja Exposes the service within the cluster
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   name: db-service
+# spec:
+#   replicas: 1
+#   selector:
+#     matchLabels:
+#       app: db-service
+#   template:
+#     metadata:
+#       labels:
+#         app: db-service
+#     spec:
+#       imagePullSecrets:
+#         - name: acr-secret 
+#       securityContext:
+#         fsGroup: 1000
+#       containers:
+#         - name: db-service
+#           image: golang.azurecr.io/db_service:448
+#           imagePullPolicy: Always
+#           ports:
+#             - containerPort: 1433
+#           env:
+#             - name: SQLSERVER_HOST
+#               valueFrom:
+#                 configMapKeyRef:
+#                   name: sqlserver-env
+#                   key: SQLSERVER_HOST
+#             - name: SQLSERVER_PORT
+#               valueFrom:
+#                 configMapKeyRef:
+#                   name: sqlserver-env
+#                   key: SQLSERVER_PORT
+#             - name: SQLSERVER_USER
+#               valueFrom:
+#                 configMapKeyRef:
+#                   name: sqlserver-env
+#                   key: SQLSERVER_USER
+#             - name: SQLSERVER_PASSWORD
+#               valueFrom:
+#                 secretKeyRef:
+#                   name: sqlserver-secret
+#                   key: SQLSERVER_PASSWORD
+#             - name: SQLSERVER_DATABASE
+#               valueFrom:
+#                 configMapKeyRef:
+#                   name: sqlserver-env
+#                   key: SQLSERVER_DATABASE
+#           volumeMounts:
+#             - name: config-volume
+#               mountPath: /app/config.json
+#               subPath: config.json
+#           resources:
+#             requests:
+#               memory: "256Mi"
+#               cpu: "250m"
+#             limits:
+#               memory: "512Mi"
+#               cpu: "500m"
+#           securityContext:
+#             runAsUser: 1000
+#             runAsGroup: 1000
+#           livenessProbe:
+#             tcpSocket:
+#               port: 1433
+#             initialDelaySeconds: 30
+#             periodSeconds: 10
+#           readinessProbe:
+#             tcpSocket:
+#               port: 1433
+#             initialDelaySeconds: 15
+#             periodSeconds: 5
+#       volumes:
+#         - name: config-volume
+#           configMap:
+#             name: db-config
+
+# ---
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: db-service
+# spec:
+#   selector:
+#     app: db-service
+#   ports:
+#     - protocol: TCP
+#       port: 1433  # Exposes the SQL Server port
+#       targetPort: 1433  # Container port where SQL Server is listening
+#   type: ClusterIP  # Ostavio sam ga da bude ClusterIP na taj nachin pristup bazi je moguch samo iz clustera a ne i spolja Exposes the service within the cluster
