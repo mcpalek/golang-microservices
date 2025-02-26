@@ -81,7 +81,4 @@ The project consists of **three microservices**, each developed in Golang:
 
 ---
 
-## **Next Steps**
-- Implement automated database migrations.
-- Add monitoring (Prometheus & Grafana).
-- Improve security (RBAC & secrets management).
+
