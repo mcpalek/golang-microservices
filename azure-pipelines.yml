@@ -60,15 +60,43 @@ stages:
       - script: |
           kubectl apply -f $(System.DefaultWorkingDirectory)/k8s/configmap.yaml
         displayName: 'Apply Kubernetes Configs'
-    # Check and deploy/update db_service
       - script: |
-          if kubectl get deployment db-service &> /dev/null; then
-            kubectl set image deployment/db-service db-service=MyAzureContainerRegistry/db_service:448
-            kubectl rollout status deployment/db-service
+          job_name="db-service"
+          expected_image="golang.azurecr.io/db_service:448"
+
+          # Check if the Job exists
+          if kubectl get job $job_name &> /dev/null; then
+            # Extract the previous image from the last Job (if available)
+            current_image=$(kubectl get job $job_name -o=jsonpath='{.spec.template.spec.containers[0].image}' 2>/dev/null)
+
+            echo "Current Image: $current_image"
+            echo "Expected Image: $expected_image"
+
+            # Check if the Job is already using the correct image
+            if [[ "$current_image" == "$expected_image" ]]; then
+              echo "✅ db-service job is already using the correct image. No need to rerun."
+              exit 0  # Exit without running the Job again
+            else
+              echo "⚠️ New image detected! Deleting and recreating db-service job..."
+              kubectl delete job $job_name
+            fi
           else
-            kubectl apply -f $(System.DefaultWorkingDirectory)/k8s/db_service-deployment.yaml
+            echo "🚀 Deploying db-service job for the first time..."
           fi
-        displayName: 'Deploy or Update DB Service'
+
+          # Apply the new Job definition
+          kubectl apply -f $(System.DefaultWorkingDirectory)/k8s/db_service-job.yaml
+        displayName: 'Deploy or Update DB Service Job'
+
+    # Check and deploy/update db_service
+      # - script: |
+      #     if kubectl get deployment db-service &> /dev/null; then
+      #       kubectl set image deployment/db-service db-service=MyAzureContainerRegistry/db_service:448
+      #       kubectl rollout status deployment/db-service
+      #     else
+      #       kubectl apply -f $(System.DefaultWorkingDirectory)/k8s/db_service-deployment.yaml
+      #     fi
+      #   displayName: 'Deploy or Update DB Service'
       - script: |
           if kubectl get deployment web-service &> /dev/null; then
             current_image=$(kubectl get deployment web-service -o=jsonpath='{.spec.template.spec.containers[0].image}')
