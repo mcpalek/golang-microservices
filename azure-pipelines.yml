@@ -85,7 +85,7 @@ stages:
           fi
 
           # Apply the new Job definition
-          kubectl apply -f $(System.DefaultWorkingDirectory)/k8s/db_service-job.yaml
+          kubectl apply -f $(System.DefaultWorkingDirectory)/k8s/db_service-deployment.yaml
         displayName: 'Deploy or Update DB Service Job'
 
     # Check and deploy/update db_service
