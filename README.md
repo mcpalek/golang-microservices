@@ -1,60 +1,87 @@
-# Golang-microservices
-Golang microservices project with docker ,  from code to the Azure cloud and kubernetes
-This is a simple POC project.
-In my home lab I have Proxmox server where I first created a kubernetes cluster with 2 nodes and SQL server 2022  inside a container on Ubuntu VM.
-This POC with some little changes can work on any of the Clouds.
+# **Golang Microservices Project**
+A proof-of-concept (POC) for deploying Golang microservices using Docker, Kubernetes, and Azure DevOps.
 
+## **Project Overview**
+This project showcases a complete microservices workflow from local development to deployment on Kubernetes, using Azure DevOps for CI/CD.
 
-First I created 3 microservices using Golang ,
- ## DB-service 
- Just create the database UserDB, and one  table in it and write some data so that I have to work with something.
+### **Home Lab Setup**
+- Running on **Proxmox**, with a **Kubernetes cluster (2 nodes)**.
+- **SQL Server 2022** is deployed inside a container on an **Ubuntu VM**.
+- With minor adjustments, this setup can be deployed on any cloud platform.
 
- ## web-service
+---
 
- Loads the data from the database, run the web serrver on port 8081 internaly
+## **Microservices Overview**
+The project consists of **three microservices**, each developed in Golang:
 
- ## Front End server
+### **1️⃣ DB Service**
+- Initializes the `UserDB` database and a `Users` table.
+- Inserts sample data for testing.
+- Deployed as a **Kubernetes Job** (runs only once).
 
-Reads the data from the web-service and show it in the browser on port 8082 using some Golang HTML templates
+### **2️⃣ Web Service**
+- Reads data from `UserDB`.
+- Runs an internal web server on **port 8081**.
+- Exposed as a **Kubernetes Service**.
 
-## Configloader
+### **3️⃣ Frontend Service**
+- Fetches data from the Web Service.
+- Uses **Golang HTML templates** to render data in a browser.
+- Runs on **port 8082** and is exposed as a **Kubernetes Service**.
 
-Containes data about the database whih is used in db-service and web-service
+### **4️⃣ Config Loader**
+- Stores database connection details.
+- Used by both `db-service` and `web-service` to load configurations.
 
-## Dockerfile
-in each of microservices folders there is the spacific dockerfile for that service
+---
 
-## docker compose
-I tested this solution using docker compose first to see if everything is working as expected
+## **Containerization**
 
-## k8s folder
+### **Dockerfiles**
+- Each microservice has its own `Dockerfile` for containerization.
 
-in this folder I have kubernetes deployments for all microservices.
-db-service will be just a job not a service
-web-service and front end are kubernetes services
-because this is on my Proxmox server and not on the cloud I made the service type for both of them to be NodePort so I can access it from the browser
-Web Service will be on port 30002 and Front End service on port 30003
+### **Docker Compose**
+- Used for local testing before deploying to Kubernetes.
 
-## Azure Devops Pipeline
+---
 
-First I created a new project and connected it with the gihub repo where the code is.
-Then I connected the local Proxmox kubernetes cluster with Azure DevOps pipeline.
-I uploaded Kubeconfig file in the Pipeline library
-On Azure I created Azure Container Registry where all the conatiners will be uploaded
+## **Kubernetes Deployment**
 
-Created two pipelines , build and deploy
+### **K8s Folder Structure**
+- Contains deployment YAML files for all microservices.
+- **`db-service`** is a **Kubernetes Job** (not a persistent service).
+- **`web-service`** and **`frontend-service`** are **Kubernetes Services**.
 
-## Build pipeline Stage
-  Build the docker container for each service and upload it to ACR.
-  For each service I have a Tag to better understand which container image was build and uploaded
+### **Service Type**
+- Since the cluster runs **on-prem (Proxmox)** and not in a cloud environment, services are exposed as **NodePort**.
+- **Web Service** → Exposed on **port 30002**.
+- **Frontend Service** → Exposed on **port 30003**.
 
-## Deploy pipeline stage
-  First deploys db-service job to populate the database.
-  second is web-service and then third is frontend service
-  
+---
 
+## **Azure DevOps Pipeline**
 
+### **Setup**
+- Created an **Azure DevOps project** and connected it to **GitHub**.
+- Connected the **Proxmox-based Kubernetes cluster** to **Azure DevOps**.
+- Uploaded the **Kubeconfig** file to the **Azure DevOps Pipeline Library**.
+- Created an **Azure Container Registry (ACR)** to store container images.
 
+### **CI/CD Pipelines**
 
+#### **1️⃣ Build Pipeline**
+- Builds a Docker container for each service.
+- Pushes images to **Azure Container Registry (ACR)**.
+- Tags each image for version control.
 
+#### **2️⃣ Deploy Pipeline**
+- **Step 1**: Deploys `db-service` job to populate the database.
+- **Step 2**: Deploys `web-service`.
+- **Step 3**: Deploys `frontend-service`.
 
+---
+
+## **Next Steps**
+- Implement automated database migrations.
+- Add monitoring (Prometheus & Grafana).
+- Improve security (RBAC & secrets management).
