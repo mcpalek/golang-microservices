@@ -67,44 +67,8 @@ func getUsers(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(users)
 }
 
-// func getUsers(w http.ResponseWriter, r *http.Request) {
-// 	config, err := configloader.LoadConfig()
-// 	if err != nil {
-// 		http.Error(w, "Config error", http.StatusInternalServerError)
-// 		return
-// 	}
 
-// 	connString := fmt.Sprintf("server=%s;port=%s;database=userDB;user id=%s;password=%s;encrypt=disable",
-// 		config.SQLServer.Host, config.SQLServer.Port, config.SQLServer.User, config.SQLServer.Password)
 
-// 	db, err := sql.Open("sqlserver", connString)
-// 	if err != nil {
-// 		http.Error(w, "Database connection error", http.StatusInternalServerError)
-// 		return
-// 	}
-// 	defer db.Close()
-
-// 	rows, err := db.Query("SELECT id, FirstName, LastName FROM Users")
-// 	if err != nil {
-// 		http.Error(w, "Error fetching users", http.StatusInternalServerError)
-// 		return
-// 	}
-// 	defer rows.Close()
-
-// 	var users []User
-// 	for rows.Next() {
-// 		var u User
-// 		if err := rows.Scan(&u.ID, &u.FirstName, &u.LastName); err != nil {
-// 			http.Error(w, "Error scanning users", http.StatusInternalServerError)
-// 			return
-// 		}
-// 		users = append(users, u)
-// 	}
-// 	fmt.Println(rows)
-// 	w.Header().Set("Content-Type", "application/json")
-// 	w.Header().Set("Access-Control-Allow-Origin", "*")
-// 	json.NewEncoder(w).Encode(users)
-// }
 
 func main() {
 	http.HandleFunc("/users", getUsers)
