@@ -87,7 +87,7 @@ stages:
       - script: |
                 if kubectl get deployment frontend-service &> /dev/null; then
                   current_image=$(kubectl get deployment frontend-service -o=jsonpath='{.spec.template.spec.containers[0].image}')
-                  expected_image="golang.azurecr.io/frontend_service:458"
+                  expected_image="golang.azurecr.io/frontend_service:476"
                   if [[ "$current_image" == "$expected_image" ]]; then
                     echo "frontend-service is already using the correct image: $expected_image"
                   else
