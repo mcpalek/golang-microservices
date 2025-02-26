@@ -69,21 +69,41 @@ stages:
             kubectl apply -f $(System.DefaultWorkingDirectory)/k8s/db_service-deployment.yaml
           fi
         displayName: 'Deploy or Update DB Service'
-
       - script: |
           if kubectl get deployment web-service &> /dev/null; then
             current_image=$(kubectl get deployment web-service -o=jsonpath='{.spec.template.spec.containers[0].image}')
-            expected_image="MyAzureContainerRegistry/web_service:458"
+            expected_image="golang.azurecr.io/web_service:458"
+
+            echo "Current Image: $current_image"
+            echo "Expected Image: $expected_image"
+
             if [[ "$current_image" == "$expected_image" ]]; then
-              echo "web-service is already using the correct image: $expected_image"
+              echo "✅ web-service is already using the correct image: $expected_image"
             else
-              kubectl set image deployment/web-service web-service=$expected_image --record --dry-run=client
+              echo "⚠️ Updating web-service to use image: $expected_image"
+              kubectl set image deployment/web-service web-service=$expected_image --record
               kubectl rollout status deployment/web-service
             fi
           else
+            echo "🚀 Deploying web-service for the first time..."
             kubectl apply -f $(System.DefaultWorkingDirectory)/k8s/web_service-deployment.yaml
           fi
         displayName: 'Deploy or Update Web Service'
+
+      # - script: |
+      #     if kubectl get deployment web-service &> /dev/null; then
+      #       current_image=$(kubectl get deployment web-service -o=jsonpath='{.spec.template.spec.containers[0].image}')
+      #       expected_image="MyAzureContainerRegistry/web_service:458"
+      #       if [[ "$current_image" == "$expected_image" ]]; then
+      #         echo "web-service is already using the correct image: $expected_image"
+      #       else
+      #         kubectl set image deployment/web-service web-service=$expected_image --record --dry-run=client
+      #         kubectl rollout status deployment/web-service
+      #       fi
+      #     else
+      #       kubectl apply -f $(System.DefaultWorkingDirectory)/k8s/web_service-deployment.yaml
+      #     fi
+      #   displayName: 'Deploy or Update Web Service'
       - script: |
           if kubectl get deployment frontend-service &> /dev/null; then
             current_image=$(kubectl get deployment frontend-service -o=jsonpath='{.spec.template.spec.containers[0].image}')
@@ -108,21 +128,6 @@ stages:
 
 
 
-
-      # # Deploy frontend_service
-      # - script: |
-      #     if kubectl get deployment frontend-service &> /dev/null; then
-      #       current_image=$(kubectl get deployment frontend-service -o=jsonpath='{.spec.template.spec.containers[0].image}')
-      #       if [[ "$current_image" != "golang.azurecr.io/frontend_service:475" ]]; then
-      #         kubectl set image deployment/frontend-service frontend-service=golang.azurecr.io/frontend_service:475
-      #         kubectl rollout status deployment/frontend-service
-      #       else
-      #         echo "frontend-service is already using the correct image."
-      #       fi
-      #     else
-      #       kubectl apply -f $(System.DefaultWorkingDirectory)/k8s/frontend_service-deployment.yaml
-      #     fi
-      #   displayName: 'Deploy or Update Frontend Service'
 
       # - script: |
       #     if kubectl get deployment web-service &> /dev/null; then
