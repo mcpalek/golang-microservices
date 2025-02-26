@@ -45,7 +45,7 @@ stages:
         dockerfile: 'frontend_service/Dockerfile'
         buildContext: $(Build.SourcesDirectory)
         tags: |
-          476
+          477
           latest
 
 - stage: Deploy
@@ -107,7 +107,7 @@ stages:
       - script: |
           if kubectl get deployment frontend-service &> /dev/null; then
             current_image=$(kubectl get deployment frontend-service -o=jsonpath='{.spec.template.spec.containers[0].image}')
-            expected_image="golang.azurecr.io/frontend_service:476"
+            expected_image="golang.azurecr.io/frontend_service:477"
 
             echo "Current Image: $current_image"
             echo "Expected Image: $expected_image"
